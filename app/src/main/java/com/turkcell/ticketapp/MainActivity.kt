@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.turkcell.core.ui.theme.TicketAppTheme
+import com.turkcell.ticketapp.ui.login.LoginScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TicketAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()){
-                    Text("app ready")
+                    LoginScreen()
                 }
             }
 
