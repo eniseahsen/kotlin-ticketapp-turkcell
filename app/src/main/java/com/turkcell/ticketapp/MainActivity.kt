@@ -11,7 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.turkcell.core.ui.theme.TicketAppTheme
-import com.turkcell.ticketapp.ui.login.LoginScreen
+import com.turkcell.ticketapp.navigation.AppNavHost
+import com.turkcell.ticketapp.screen.LoginScreen
+
 
 
 class MainActivity : ComponentActivity() {
@@ -20,9 +22,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TicketAppTheme {
-                Surface(modifier = Modifier.fillMaxSize()){
-                    LoginScreen()
-                }
+
+                AppNavHost()
+
             }
 
         }

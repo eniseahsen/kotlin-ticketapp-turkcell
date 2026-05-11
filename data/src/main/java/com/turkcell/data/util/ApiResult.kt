@@ -2,12 +2,12 @@ package com.turkcell.data.util
 
 //tüm api isteklerim tek kalıpta ilerlesin
 
-interface ApiResult<out T> {
+sealed interface ApiResult<out T> {
     data class Success<T>(val data: T) : ApiResult<T>
-    data class Error<T>(val error: Throwable) : ApiResult<Nothing>
+    data class Error(val error: Throwable) : ApiResult<Nothing>
 }
 
-inline  fun <T, R> ApiResult<T>.fold(
+inline fun <T, R> ApiResult<T>.fold(
     onSuccess: (T) -> R,
     onError: (Throwable) -> R
 ): R= when(this){
