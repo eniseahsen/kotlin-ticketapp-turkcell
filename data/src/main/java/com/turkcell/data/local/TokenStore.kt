@@ -11,40 +11,37 @@ import kotlinx.coroutines.runBlocking
 
 //tokenları kişinin cihazında tutacağım
 
-private val Context.authDataStore by preferencesDataStore(name="auth_prefs") //Telefonda auth_prefs isimli güvenli storage oluştur
-//single source garantileme için class ın dışında tanımladım
-class TokenStore(private val context: Context) {
-    private object Keys{
+private val Context.authDataStore by preferencesDataStore(name="auth_prefs")
+
+class TokenStore(private val context: Context)
+{
+    private object Keys {
         val ACCESS = stringPreferencesKey("access_token")
         val REFRESH = stringPreferencesKey("refresh_token")
     }
 
-
+    // UI tarafından collect edilmek için
     val accessToken: Flow<String?> = context.authDataStore.data.map { it[Keys.ACCESS] }
     val refreshToken: Flow<String?> = context.authDataStore.data.map { it[Keys.REFRESH] }
 
-    suspend fun save(access: String, refresh: String){
-        context.authDataStore.edit{
-            prefs ->
-                prefs[Keys.ACCESS] = access
-                prefs[Keys.REFRESH] = refresh
 
-
+    suspend fun save(access:String, refresh: String) {
+        context.authDataStore.edit {
+                prefs ->
+            prefs[Keys.ACCESS] = access
+            prefs[Keys.REFRESH] = refresh
         }
     }
 
-
-
-    suspend fun clear(){
+    suspend fun clear() {
         context.authDataStore.edit { prefs ->
             prefs.remove(Keys.ACCESS)
             prefs.remove(Keys.REFRESH)
         }
     }
 
-    //Çünkü interceptor suspend çalışamaz
     fun accessTokenBlocking(): String? = runBlocking { accessToken.first() }
     fun refreshTokenBlocking(): String? = runBlocking { refreshToken.first() }
     fun saveBlocking(access: String, refresh: String) = runBlocking { save(access,refresh) }
-    fun clearBlocking() = runBlocking { clear()}
+    fun clearBlocking() = runBlocking { clear() }
 }

@@ -42,7 +42,7 @@ fun RegisterScreen(
 
     LaunchedEffect(state.isRegistered){
         if (state.isRegistered)
-            onRegisterSuccess
+            onRegisterSuccess()
     }
 
     Surface(modifier = Modifier.fillMaxSize()){

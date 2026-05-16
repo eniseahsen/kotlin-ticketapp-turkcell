@@ -2,11 +2,14 @@ package com.turkcell.data.di
 
 import android.R.attr.level
 import com.turkcell.core.domain.AuthRepository
+import com.turkcell.core.domain.EventRepository
 import com.turkcell.data.local.TokenStore
 import com.turkcell.data.network.AuthInterceptor
 import com.turkcell.data.network.TokenAuthenticator
 import com.turkcell.data.remote.AuthApi
+import com.turkcell.data.remote.EventApi
 import com.turkcell.data.repository.AuthRepositoryImpl
+import com.turkcell.data.repository.EventRepositoryImpl
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -18,20 +21,22 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 private const val BASE_URL = "https://tickets-api.halitkalayci.com/"
 
-private val REFRESH_CLIENT = named("refres_client")
+private val REFRESH_CLIENT = named("refresh_client")
 private val REFRESH_RETROFIT = named("refresh_retrofit")
 private val REFRESH_API = named("refresh_api")
-val dataModule = module{ //bağımlılıkları tanımlamak için
-    //scope (kapsam)
-    // 3temel seçenek
-    //yaşam döngüdndeki bağımlılığın davranış biçimi
-    //singelton -> uygulama yaşam döngüsü boyunca tek örnek
+
+val dataModule = module {
+    // Scope (Kapsam)
+    // 3 temel seçenek
+
+    // Yaşam döngüsündeki bağımlılığın davranış biçimi
+
+    // Single (Singleton) -> Uygulama yaşam döngüsü boyunca tek örnek.
     single {
         Json {
-            ignoreUnknownKeys = true //cevapta var olan ama classta olmayan alanları ignore et
+            ignoreUnknownKeys = true // Cevapta var olan ama classta olmayan alanları ignore et.
             explicitNulls = false
-            isLenient = true //tırnaksız key gelirse tolere et vs
-
+            isLenient = true
         }
     }
 
@@ -39,30 +44,29 @@ val dataModule = module{ //bağımlılıkları tanımlamak için
         HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
-
     }
 
-    single{
+    single {
         TokenStore(context=get())
-    }//tek bir token store yeterli o yüzden single
+    }
+
+    single { AuthInterceptor(tokenStore = get()) }
 
     single {
-        TokenStore(context=get())}
-
-    single { AuthInterceptor(tokenStore = get())}
-
-    single{
+        val refreshApi = get<AuthApi>(REFRESH_API)
         TokenAuthenticator(
             tokenStore = get(),
-            refreshApiProvider = get(REFRESH_API)
+            refreshApiProvider = { refreshApi }
         )
     }
 
-    single(REFRESH_CLIENT){
+    // Refresh Stack
+    single(REFRESH_CLIENT) {
         OkHttpClient.Builder().addInterceptor(get<HttpLoggingInterceptor>()).build()
     }
 
-    single(REFRESH_RETROFIT){
+    single(REFRESH_RETROFIT)
+    {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(get(REFRESH_CLIENT))
@@ -70,18 +74,19 @@ val dataModule = module{ //bağımlılıkları tanımlamak için
             .build()
     }
 
-    single(REFRESH_API){
+    single(REFRESH_API)
+    {
         get<Retrofit>(REFRESH_RETROFIT).create(AuthApi::class.java)
     }
+    // Refresh Stack
 
 
-
-    // HTTP isteklerini yönetmek
+    // HTTP isteklerini yönetmek..
     single {
         OkHttpClient.Builder()
             .addInterceptor(get<AuthInterceptor>())
-            .addInterceptor(get<HttpLoggingInterceptor>())
             .authenticator(get<TokenAuthenticator>())
+            .addInterceptor(get<HttpLoggingInterceptor>())
             .build()
     }
 
@@ -92,19 +97,29 @@ val dataModule = module{ //bağımlılıkları tanımlamak için
             .addConverterFactory(get<Json>().asConverterFactory("application/json".toMediaType()))
             .build()
     }
-
     single {
-        get<Retrofit>().create(AuthApi:: class.java)
+        get<Retrofit>().create(AuthApi::class.java)
     }
+
 
     single<AuthRepository> {
         AuthRepositoryImpl(
-            authApi =  get(),
-            tokenStore = get()
+            authApi = get(),
+            tokenStore = get(),
+
         )
     }
 
-    // factory -> her çağırıldığında yeni instance üretir. her fonksiyon için birer örnek
+    single{
+        get<Retrofit>().create(EventApi::class.java)
+    }
+
+    single<EventRepository> {
+        EventRepositoryImpl(eventApi = get())
+    }
+
+
+    // factory -> Her çağırıldığı noktada yeni instance üretir. Her fonksiyon için birer örnek
 
     // scoped -> Class -> tüm fonksiyonlarına 1 örnek
 }
