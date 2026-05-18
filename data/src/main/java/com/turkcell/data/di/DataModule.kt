@@ -8,8 +8,11 @@ import com.turkcell.data.network.AuthInterceptor
 import com.turkcell.data.network.TokenAuthenticator
 import com.turkcell.data.remote.AuthApi
 import com.turkcell.data.remote.EventApi
+import com.turkcell.data.remote.TicketApi
 import com.turkcell.data.repository.AuthRepositoryImpl
 import com.turkcell.data.repository.EventRepositoryImpl
+import com.turkcell.data.repository.TicketRepository
+import com.turkcell.data.repository.TicketRepositoryImpl
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -116,6 +119,14 @@ val dataModule = module {
 
     single<EventRepository> {
         EventRepositoryImpl(eventApi = get())
+    }
+
+    single{
+        get<Retrofit>().create(TicketApi::class.java)
+    }
+
+    single<TicketRepository>{
+        TicketRepositoryImpl(ticketApi = get())
     }
 
 

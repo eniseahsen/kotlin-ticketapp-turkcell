@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.turkcell.core.ui.components.EventCard
+import com.turkcell.core.ui.components.TicketCard
 import com.turkcell.ticketapp.viewmodel.HomeViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -23,29 +24,45 @@ import org.koin.androidx.compose.koinViewModel
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = koinViewModel()
-){
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    Column(modifier = Modifier.fillMaxSize().statusBarsPadding().padding(16.dp)){
-        Text("Etkinlikler")
 
-        if(state.isLoading){
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        if (state.isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
             )
-            {
-                CircularProgressIndicator()
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+
+            item {
+                Text("Etkinlikler")
             }
 
-        }
-        state.error?.let{
-            Text("Hata: $it")
-        }
-
-        LazyColumn{
-            items(state.events){ event ->
+            items(state.events) { event ->
                 EventCard(event)
             }
+
+            item {
+                Text("Biletlerim")
+            }
+
+            items(state.tickets) { ticket ->
+                TicketCard(ticket)
+            }
+        }
+
+        state.error?.let {
+            Text(
+                text = "Hata: $it",
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
     }
 }
