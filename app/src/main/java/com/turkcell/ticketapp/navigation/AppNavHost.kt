@@ -51,7 +51,7 @@ private fun SplashScreen(){
         CircularProgressIndicator()
     }
 }
-
+/*
 @Composable
 private fun AuthedNavHost(navController: NavHostController){
     NavHost(navController=navController, startDestination = Home){
@@ -60,7 +60,7 @@ private fun AuthedNavHost(navController: NavHostController){
         }
     }
 }
-
+*/
 @Composable
 private fun UnAuthedNavHost(navController: NavHostController){
     NavHost(navController=navController, startDestination = Login) {
