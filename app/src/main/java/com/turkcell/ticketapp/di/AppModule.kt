@@ -1,7 +1,7 @@
 package com.turkcell.ticketapp.di
 
 import org.koin.androidx.viewmodel.dsl.viewModel
-import com.turkcell.core.domain.AuthRepository
+import com.turkcell.core.domain.auth.AuthRepository
 import com.turkcell.data.repository.AuthRepositoryImpl
 import com.turkcell.ticketapp.viewmodel.HomeViewModel
 import com.turkcell.ticketapp.viewmodel.LoginViewModel

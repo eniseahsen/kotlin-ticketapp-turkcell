@@ -1,6 +1,5 @@
-package com.turkcell.data.dto
+package com.turkcell.data.dto.event
 
-import com.turkcell.core.domain.TicketType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,7 +10,3 @@ data class TicketDto(
     val ticketTypeId: String
 
 )
-
-
-
-

@@ -2,69 +2,44 @@ package com.turkcell.ticketapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.turkcell.core.domain.Event
+import com.turkcell.core.domain.event.Event
 import com.turkcell.core.domain.EventRepository
 import com.turkcell.core.domain.Ticket
 import com.turkcell.data.repository.TicketRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class HomeUiState(
-    val isLoading: Boolean = false,
+    val isEventsLoading: Boolean = false,
     val events: List<Event> = emptyList(),
-    val tickets: List<Ticket> = emptyList(),
-    val error: String? = null
+    val eventsError: String? = null
 )
 
-class HomeViewModel(
-    private val eventRepository: EventRepository,
-    private val ticketRepository: TicketRepository
-): ViewModel(){
+class HomeViewModel(private val eventRepository: EventRepository) : ViewModel() {
     private val _state = MutableStateFlow(HomeUiState())
-    val state = _state.asStateFlow()
+    val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
-    init{
-        loadData()
+    init {
+        loadEvents()
     }
 
-    fun loadData(){
-        _state.update { it.copy(isLoading = true) }
-        viewModelScope.launch{
-            val eventsResult = eventRepository.getEvents()
-            val ticketResults = ticketRepository.getMyTickets()
+    fun loadEvents() {
+        if (_state.value.isEventsLoading) return
 
-            eventsResult
-                .onSuccess { events ->
-                    ticketResults
-                        .onSuccess { tickets ->
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    events = events,
-                                    tickets = tickets
-                                )
-                            }
-                        }
-                        .onFailure{ error ->
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    error = error.message
-                                )
-                            }
-                        }
+        _state.update { it.copy(isEventsLoading = true, eventsError = null) }
+
+        viewModelScope.launch {
+            eventRepository.getEvents().fold(
+                onSuccess = {
+                        list -> _state.update { it.copy(events = list, isEventsLoading = false, eventsError = null)}
+                },
+                onFailure = {
+                        e -> _state.update { it.copy(isEventsLoading = false, eventsError = e.message ?: "Etkinlikler yüklenemedi.") }
                 }
-                .onFailure { error  ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = error.message
-                        )
-                    }
-                }
+            )
         }
-
     }
 }

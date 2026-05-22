@@ -1,7 +1,7 @@
 package com.turkcell.data.di
 
 import android.R.attr.level
-import com.turkcell.core.domain.AuthRepository
+import com.turkcell.core.domain.auth.AuthRepository
 import com.turkcell.core.domain.EventRepository
 import com.turkcell.data.local.TokenStore
 import com.turkcell.data.network.AuthInterceptor
