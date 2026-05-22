@@ -31,21 +31,16 @@ import org.koin.compose.koinInject
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     authRepository: AuthRepository = koinInject()
+)
+{
+    val isLoggedIn by authRepository.isLoggedIn.collectAsStateWithLifecycle(initialValue = null)
 
-    ){
-
-    val isLoggedIn by authRepository.isLoggedIn.collectAsStateWithLifecycle(initialValue =  null)
-
-    when(isLoggedIn){
+    when(isLoggedIn)
+    {
         null -> SplashScreen()
         true -> AuthedNavHost(navController)
         false -> UnAuthedNavHost(navController)
     }
-
-
-
-
-
 }
 
 @Composable
@@ -55,11 +50,9 @@ private fun SplashScreen(){
     }
 }
 
-
-
 @Composable
 private fun AuthedNavHost(navController: NavHostController){
-    NavHost(navController = navController, startDestination = Home){
+    NavHost(navController=navController, startDestination = Home){
         composable<Home> {
             HomeScreen()
         }
@@ -68,14 +61,14 @@ private fun AuthedNavHost(navController: NavHostController){
 
 @Composable
 private fun UnAuthedNavHost(navController: NavHostController){
-    NavHost(navController=navController, startDestination = Login){
+    NavHost(navController=navController, startDestination = Login) {
         composable<Login>{
             LoginScreen(
-                onLoginSuccess = {},
+                onLoginSuccess = { navController.navigate(Home) },
                 onNavigateToRegister = {navController.navigate(Register)}
             )
         }
-        composable<Register>{
+        composable<Register> {
             Text("Register Screen")
         }
     }

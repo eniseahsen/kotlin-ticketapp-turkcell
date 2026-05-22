@@ -21,8 +21,9 @@ private val LightColors = lightColorScheme(
     error = ErrorRed,
     onError = OnPrimary,
 )
+
 @Composable
-fun TicketAppTheme(content: @Composable () -> Unit){
+fun TicketAppTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = LightColors,
         typography = TicketAppTypography,

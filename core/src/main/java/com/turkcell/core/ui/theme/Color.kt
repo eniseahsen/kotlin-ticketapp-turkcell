@@ -2,7 +2,6 @@ package com.turkcell.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-
 val BrandPrimary = Color(0xFF4F46E5)
 val BrandPrimaryDark = Color(0xFF3730A3)
 val BrandAccent = Color(0xFFEC4899)

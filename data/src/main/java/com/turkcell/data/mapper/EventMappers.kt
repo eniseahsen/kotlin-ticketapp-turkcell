@@ -11,7 +11,7 @@ internal fun EventDto.toDomain(): Event = Event(
     description= description.orEmpty(),
     venue= place.orEmpty(),
     startsAt = startsAt.orEmpty(),
-    endsAt = endsAt.orEmpty(),
+    endsAt = endsAt,
     ticketTypes = ticketTypes.map { it.toDomain() }
 )
 

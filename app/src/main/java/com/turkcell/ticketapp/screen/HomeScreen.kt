@@ -28,8 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.turkcell.core.domain.event.Event
-import com.turkcell.core.ui.components.EventCard
-import com.turkcell.core.ui.components.TicketCard
+
 import com.turkcell.ticketapp.viewmodel.HomeViewModel
 import org.koin.androidx.compose.koinViewModel
 

@@ -1,5 +1,5 @@
 package com.turkcell.ticketapp
-
+import com.turkcell.core.ui.theme.TicketAppTheme
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,7 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.turkcell.core.ui.theme.TicketAppTheme
+
 import com.turkcell.ticketapp.navigation.AppNavHost
 import com.turkcell.ticketapp.screen.LoginScreen
 
