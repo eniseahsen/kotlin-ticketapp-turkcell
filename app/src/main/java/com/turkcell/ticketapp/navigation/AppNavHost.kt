@@ -19,10 +19,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.turkcell.core.domain.auth.AuthRepository
 import com.turkcell.ticketapp.screen.HomeScreen
 import com.turkcell.ticketapp.screen.LoginScreen
 import com.turkcell.ticketapp.screen.RegisterScreen
+import com.turkcell.ticketapp.screen.TicketDetailScreen
 import com.turkcell.ticketapp.viewmodel.HomeViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -70,6 +72,21 @@ private fun UnAuthedNavHost(navController: NavHostController){
         }
         composable<Register> {
             Text("Register Screen")
+        }
+    }
+}
+
+@Composable
+private fun AuthedNavHost(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = Home) {
+        composable<Home> {
+            HomeScreen(
+                onTicketClick = { ticketId -> navController.navigate(TicketDetail(ticketId)) }
+            )
+        }
+        composable<TicketDetail> { backStackEntry ->
+            val route = backStackEntry.toRoute<TicketDetail>()
+            TicketDetailScreen(ticketId = route.ticketId)
         }
     }
 }

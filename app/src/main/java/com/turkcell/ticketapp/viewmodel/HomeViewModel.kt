@@ -15,30 +15,41 @@ import kotlinx.coroutines.launch
 data class HomeUiState(
     val isEventsLoading: Boolean = false,
     val events: List<Event> = emptyList(),
-    val eventsError: String? = null
+    val eventsError: String? = null,
+    val isTicketsLoading: Boolean = false,
+    val tickets: List<Ticket> = emptyList(),
+    val ticketsError: String? = null
 )
 
-class HomeViewModel(private val eventRepository: EventRepository) : ViewModel() {
+class HomeViewModel(
+    private val eventRepository: EventRepository,
+    private val ticketRepository: TicketRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(HomeUiState())
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
     init {
         loadEvents()
+        loadTickets()
     }
 
     fun loadEvents() {
         if (_state.value.isEventsLoading) return
-
         _state.update { it.copy(isEventsLoading = true, eventsError = null) }
-
         viewModelScope.launch {
             eventRepository.getEvents().fold(
-                onSuccess = {
-                        list -> _state.update { it.copy(events = list, isEventsLoading = false, eventsError = null)}
-                },
-                onFailure = {
-                        e -> _state.update { it.copy(isEventsLoading = false, eventsError = e.message ?: "Etkinlikler yüklenemedi.") }
-                }
+                onSuccess = { list -> _state.update { it.copy(events = list, isEventsLoading = false, eventsError = null) } },
+                onFailure = { e -> _state.update { it.copy(isEventsLoading = false, eventsError = e.message ?: "Etkinlikler yüklenemedi.") } }
+            )
+        }
+    }
+
+    fun loadTickets() {
+        _state.update { it.copy(isTicketsLoading = true, ticketsError = null) }
+        viewModelScope.launch {
+            ticketRepository.getMyTickets().fold(
+                onSuccess = { list -> _state.update { it.copy(tickets = list, isTicketsLoading = false) } },
+                onFailure = { e -> _state.update { it.copy(isTicketsLoading = false, ticketsError = e.message ?: "Biletler yüklenemedi.") } }
             )
         }
     }

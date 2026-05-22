@@ -1,6 +1,7 @@
 package com.turkcell.ticketapp.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,15 +28,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.turkcell.core.domain.Ticket
 import com.turkcell.core.domain.event.Event
+import com.turkcell.ticketapp.viewmodel.HomeUiState
 
 import com.turkcell.ticketapp.viewmodel.HomeViewModel
 import org.koin.androidx.compose.koinViewModel
 
 
+
+
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = koinViewModel()
+    viewModel: HomeViewModel = koinViewModel(),
+    onTicketClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -48,6 +54,42 @@ fun HomeScreen(
 
             Spacer(Modifier.height(8.dp))
             Text("Satın Alınmış Biletler")
+            Spacer(Modifier.height(8.dp))
+            TicketsColumn(
+                isLoading = state.isTicketsLoading,
+                error = state.ticketsError,
+                tickets = state.tickets,
+                onTicketClick = onTicketClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun TicketsColumn(
+    isLoading: Boolean,
+    error: String?,
+    tickets: List<Ticket>,
+    onTicketClick: (String) -> Unit
+) {
+    when {
+        isLoading -> CircularProgressIndicator()
+        error != null -> Text(error)
+        tickets.isEmpty() -> Text("Henüz biletiniz yok.")
+        else -> LazyColumn {
+            items(items = tickets, key = { it.id }) { ticket ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 4.dp)
+                        .clickable { onTicketClick(ticket.id) }
+                ) {
+                    Text(
+                        text = "Bilet #${ticket.id.take(8)}",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
         }
     }
 }
