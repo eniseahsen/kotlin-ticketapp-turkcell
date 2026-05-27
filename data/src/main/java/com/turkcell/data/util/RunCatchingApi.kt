@@ -1,7 +1,8 @@
 package com.turkcell.data.util
 
-import com.turkcell.data.network.ApiException
-import com.turkcell.data.network.NetworkException
+import com.turkcell.core.domain.exception.ApiException
+import com.turkcell.core.domain.exception.NetworkException
+import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -10,7 +11,8 @@ suspend inline fun <T> runCatchingApi(crossinline block: suspend () -> T): Resul
 }
 catch(e: HttpException)
 {
-    Result.failure(ApiException(code = e.code(), errorMessage = e.message(), cause = e))
+    val errorCode = parseErrorCode(e)
+    Result.failure(ApiException(code = e.code(), errorMessage = e.message(), errorCode = errorCode, cause = e))
 }
 
 catch(e: IOException){
@@ -19,4 +21,18 @@ catch(e: IOException){
 catch(e: Exception)
 {
     Result.failure(e)
+}
+
+fun parseErrorCode(e: HttpException): String? = try {
+    val body = e.response()?.errorBody()?.string() ?: return null
+    val json = JSONObject(body)
+    val errorObj = json.optJSONObject("error")
+    if (errorObj != null) {
+        errorObj.optString("code").ifBlank { null }
+            ?: errorObj.optString("message").ifBlank { null }
+    } else {
+        json.optString("error").ifBlank { null }
+    }
+}catch (_: Exception){
+    null
 }

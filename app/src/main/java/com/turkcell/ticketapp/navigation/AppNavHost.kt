@@ -71,7 +71,16 @@ private fun UnAuthedNavHost(navController: NavHostController){
             )
         }
         composable<Register> {
-            Text("Register Screen")
+            RegisterScreen(
+                onRegisterSuccess = {
+                    navController.navigate(Home){
+                        popUpTo(Register){inclusive = true}
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.popBackStack()
+                }
+            ) 
         }
     }
 }

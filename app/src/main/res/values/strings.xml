@@ -1,3 +1,26 @@
 <resources>
     <string name="app_name">TicketApp</string>
+
+    <string name="register_title">Kayıt Ol</string>
+
+
+    <string name="error_invalid_email">Geçersiz e-posta adresi</string>
+
+
+    <string name="error_password_min">Şifre en az 8 karakter olmalı</string>
+
+
+    <string name="label_confirm_password">Şifreyi Onayla</string>
+    <string name="error_passwords_mismatch">Şifreler uyuşmuyor</string>
+
+
+    <string name="register_button">Kayıt Ol</string>
+    <string name="register_already_have_account">Zaten hesabın var mı? Giriş yap</string>
+
+    <string name="password">Şifre</string>
+    <string name="email">Email</string>
+    <string name="login_title">Giriş Yap</string>
+
+    <string name="password_at_least">En az 8 karakter</string>
+    <string name="login_no_account">Hesabın yok mu? Kayıt Ol</string>
 </resources>

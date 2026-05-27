@@ -3,8 +3,7 @@ package com.turkcell.ticketapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.turkcell.core.domain.auth.AuthRepository
-import com.turkcell.data.network.ApiException
-import com.turkcell.data.network.NetworkException
+import com.turkcell.core.util.toUserMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +18,8 @@ data class LoginUiState(val email: String = "",
 
 
     val canSubmit: Boolean get() = email.isNotBlank() && password.length >=8 && !isLoading
+    /** API kuralı: 8–128 karakter */
+    val isPasswordValid: Boolean get() = password.length in 8..128
 }
 
 class LoginViewModel(private val authRepository: AuthRepository): ViewModel(){
@@ -43,14 +44,4 @@ class LoginViewModel(private val authRepository: AuthRepository): ViewModel(){
 }
 
 
-//internal: bu fonksiyon sadece aynı module içinde kullanılabilir
-internal fun Throwable.toUserMessage(): String = when(this)
-{
-    is ApiException -> when(code){
-        401 -> "Email veya şifre hatalı"
-        in 500..599 -> "Sunucu şu anda cevap veremiyor"
-        else -> "Beklenmeyen bir hata oluştu"
-    }
-    is NetworkException -> "İnternet bağlantısı yok"
-    else -> message ?: "Bilinmeyen bir hata oluştu."
-}
+

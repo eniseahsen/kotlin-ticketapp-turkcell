@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.turkcell.core.util.toUserMessage
 
 data class RegisterUiState(
     val email: String = "",
@@ -18,6 +19,12 @@ data class RegisterUiState(
     val isRegistered: Boolean = false
 ){
     val passwordsMatch: Boolean get() = password  == confirmPassword
+
+    /** API kuralı: 8–128 karakter */
+    val isPasswordValid: Boolean get() = password.length in 8..128
+
+    /** Basit e-posta format kontrolü */
+    val isEmailValid: Boolean get() = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     val canSubmit: Boolean
         get() = email.isNotBlank()
                 && password.length >= 8
