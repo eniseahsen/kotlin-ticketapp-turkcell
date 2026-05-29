@@ -23,4 +23,32 @@
 
     <string name="password_at_least">En az 8 karakter</string>
     <string name="login_no_account">Hesabın yok mu? Kayıt Ol</string>
+    <string name="event_detail_title">Etkinlik Detayı</string>
+    <string name="total_price">Toplam Ücret: %1$.2f ₺ </string>
+
+    <string name="purchase_button">Satın Al</string>
+    <string name="retry">Tekrar Dene</string>
+
+    <string name="event_starts_at">Başlangıç Tarihi: %1$s</string>
+    <string name="event_ends_at">Bitiş Tarihi: %1$s</string>
+
+    <string name="ticket_types_header">Bilet Türü</string>
+
+    <string name="ticket_capacity_info">Bilet Kapasitesi: %1$s</string>
+
+    <string name="ticket_price">Bilet Ücreti: %1$.2f ₺</string>
+    <string name="no_event">Şimdilik hiçbir etkinlik yok. </string>
+
+    <string name="coming_events">Yaklaşan Etkinlikler</string>
+
+    <string name="confirm_payment">Ödemeyi Onayla</string>
+
+    <string name="payment_confirm_message">
+    Toplam %1$.2f ₺ tutarında ödeme yapılacak. Onaylıyor musunuz?
+</string>
+
+    <string name="my_tickets_title">Biletlerim</string>
+    <string name="no_tickets">Satın Alınmış Bilet Yok</string>
+
+
 </resources>

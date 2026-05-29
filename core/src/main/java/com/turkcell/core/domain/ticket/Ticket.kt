@@ -1,4 +1,6 @@
-package com.turkcell.core.domain
+package com.turkcell.core.domain.ticket
+
+import com.turkcell.core.domain.ticket.TicketStatus
 
 data class Ticket(
     val id: String,

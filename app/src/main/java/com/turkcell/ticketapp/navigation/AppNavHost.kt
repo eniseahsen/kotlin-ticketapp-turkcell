@@ -1,6 +1,6 @@
 package com.turkcell.ticketapp.navigation
 
-import android.window.SplashScreen
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,8 +21,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.turkcell.core.domain.auth.AuthRepository
+import com.turkcell.ticketapp.screen.EventDetailScreen
 import com.turkcell.ticketapp.screen.HomeScreen
 import com.turkcell.ticketapp.screen.LoginScreen
+import com.turkcell.ticketapp.screen.MyTicketsScreen
 import com.turkcell.ticketapp.screen.RegisterScreen
 import com.turkcell.ticketapp.screen.TicketDetailScreen
 import com.turkcell.ticketapp.viewmodel.HomeViewModel
@@ -90,12 +92,35 @@ private fun AuthedNavHost(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Home) {
         composable<Home> {
             HomeScreen(
+                onEventClick = { eventId -> navController.navigate(EventDetail(eventId)) },
                 onTicketClick = { ticketId -> navController.navigate(TicketDetail(ticketId)) }
             )
         }
         composable<TicketDetail> { backStackEntry ->
             val route = backStackEntry.toRoute<TicketDetail>()
             TicketDetailScreen(ticketId = route.ticketId)
+        }
+        composable<EventDetail> { backStackEntry ->
+            val route = backStackEntry.toRoute<EventDetail>()
+            EventDetailScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onPurchaseComplete = {
+                    navController.navigate(MyTickets){
+                        popUpTo(Home)
+                    }
+
+                }
+            )
+        }
+
+        composable<MyTickets>{
+            MyTicketsScreen(
+                onNavigateBack = { navController.popBackStack()},
+                onTicketClick = { ticketId -> navController.navigate(TicketDetail(ticketId))}
+
+            )
         }
     }
 }

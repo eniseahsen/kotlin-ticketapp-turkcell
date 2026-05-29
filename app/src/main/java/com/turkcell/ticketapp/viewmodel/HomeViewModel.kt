@@ -3,9 +3,9 @@ package com.turkcell.ticketapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.turkcell.core.domain.event.Event
-import com.turkcell.core.domain.EventRepository
-import com.turkcell.core.domain.Ticket
-import com.turkcell.data.repository.TicketRepository
+import com.turkcell.core.domain.event.EventRepository
+import com.turkcell.core.domain.ticket.Ticket
+import com.turkcell.core.domain.ticket.TicketRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-object DataFormatter{
+object DateFormatter{
     private val inputFormatter = DateTimeFormatter.ISO_DATE_TIME
     private val outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy HH:mm", Locale("tr"))
 
