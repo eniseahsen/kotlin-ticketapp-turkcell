@@ -17,9 +17,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -27,20 +32,23 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.turkcell.core.domain.auth.AuthRepository
 import com.turkcell.core.domain.ticket.Ticket
 import com.turkcell.core.domain.event.Event
 import com.turkcell.ticketapp.R
 import com.turkcell.ticketapp.viewmodel.HomeUiState
 
 import com.turkcell.ticketapp.viewmodel.HomeViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-
+import org.koin.compose.koinInject
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,14 +56,28 @@ import org.koin.androidx.compose.koinViewModel
 fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
     onTicketClick: (String) -> Unit,
-    onEventClick: (String) -> Unit
+    onEventClick: (String) -> Unit,
+    onMyTicketClick: () -> Unit,
+    authRepository: AuthRepository = koinInject()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(text = stringResource(R.string.coming_events))
+                },
+                actions = {
+                    // Biletlerim butonu
+                    IconButton(onClick = onMyTicketClick){
+                        Icon(Icons.Default.ConfirmationNumber, contentDescription = "Biletlerim")
+                    }
+                    // Çıkış → token silinir → isLoggedIn false → login'e düşer
+                    IconButton(onClick = {scope.launch { authRepository.logout() }}){
+                        Icon(Icons.AutoMirrored.Filled.Logout,contentDescription = "Çıkış")
+                    }
                 }
             )
         }

@@ -93,13 +93,11 @@ private fun AuthedNavHost(navController: NavHostController) {
         composable<Home> {
             HomeScreen(
                 onEventClick = { eventId -> navController.navigate(EventDetail(eventId)) },
-                onTicketClick = { ticketId -> navController.navigate(TicketDetail(ticketId)) }
+                onTicketClick = { ticketId -> navController.navigate(TicketDetail(ticketId)) },
+                onMyTicketClick = { navController.navigate(MyTickets)}
             )
         }
-        composable<TicketDetail> { backStackEntry ->
-            val route = backStackEntry.toRoute<TicketDetail>()
-            TicketDetailScreen(ticketId = route.ticketId)
-        }
+
         composable<EventDetail> { backStackEntry ->
             val route = backStackEntry.toRoute<EventDetail>()
             EventDetailScreen(
@@ -120,6 +118,12 @@ private fun AuthedNavHost(navController: NavHostController) {
                 onNavigateBack = { navController.popBackStack()},
                 onTicketClick = { ticketId -> navController.navigate(TicketDetail(ticketId))}
 
+            )
+        }
+
+        composable<TicketDetail>{
+            TicketDetailScreen(
+                onNavigateBack = { navController.popBackStack()}
             )
         }
     }

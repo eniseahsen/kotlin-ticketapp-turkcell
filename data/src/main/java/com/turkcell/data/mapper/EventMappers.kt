@@ -44,6 +44,7 @@ internal fun PurchaseDto.toDomain(): Purchase = Purchase(
     status = PurchaseStatus.fromApi(status),
     totalCents = totalCents,
     paidAt = paidAt,
-    items = items.map { PurchaseItem(it.ticketTypeId, it.quantity) }
+    items = items.map { PurchaseItem(it.ticketTypeId, it.quantity) },
+    tickets = tickets.map { it.toDomain()}
 
 )

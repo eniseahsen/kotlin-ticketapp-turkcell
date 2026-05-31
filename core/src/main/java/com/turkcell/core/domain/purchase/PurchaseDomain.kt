@@ -1,5 +1,7 @@
 package com.turkcell.core.domain.purchase
 
+import com.turkcell.core.domain.ticket.Ticket
+
 data class PurchaseItem(
     val ticketTypeId: String,
     val quantity: Int
@@ -20,6 +22,7 @@ data class Purchase(
     val totalCents: Long,
     val paidAt: String? = null,
     val items: List<PurchaseItem>,
+    val tickets: List<Ticket> = emptyList()
 
 
 )

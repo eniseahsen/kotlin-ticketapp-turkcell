@@ -11,6 +11,7 @@ import com.turkcell.ticketapp.viewmodel.RegisterViewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.dsl.module
 import com.turkcell.ticketapp.viewmodel.PurchaseViewModel
+import com.turkcell.ticketapp.viewmodel.TicketDetailViewModel
 
 
 val appModule = module {
@@ -21,6 +22,7 @@ val appModule = module {
     viewModelOf(::EventDetailViewModel)
     viewModelOf(::PurchaseViewModel)
     viewModelOf(::MyTicketViewModel)
+    viewModelOf(::TicketDetailViewModel)
 
 
 
