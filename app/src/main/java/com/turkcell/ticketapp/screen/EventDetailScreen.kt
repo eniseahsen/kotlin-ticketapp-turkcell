@@ -59,41 +59,38 @@ fun EventDetailScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val purchaseState by purchaseViewModel.state.collectAsStateWithLifecycle()
 
-    // Ödeme başarılı → Biletlerim'e git
     LaunchedEffect(purchaseState.isPaid){
         if (purchaseState.isPaid) onPurchaseComplete()
     }
 
-    // capacity_exceeded → etkinliği yenile
     LaunchedEffect(purchaseState.shouldRefreshEvent) {
         if (purchaseState.shouldRefreshEvent){
-            viewModel.loadEvent()
+            viewModel.refreshEvent()
             purchaseViewModel.consumeRefreshEvent()
         }
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(purchaseState.errorMessage) {
-        purchaseState.errorMessage?.let{
+        purchaseState.errorMessage?.let {
             snackbarHostState.showSnackbar(it)
             purchaseViewModel.consumeError()
         }
     }
 
-    // Ödeme onay diyaloğu
     if (purchaseState.pendingPurchaseId != null){
         PurchaseConfirmDialog(
             totalCents = state.totalCents,
             isLoading = purchaseState.isLoading,
             onConfirm = purchaseViewModel::confirmPayment,
-            onDismiss = purchaseViewModel:: dismissDialog
+            onDismiss = purchaseViewModel::dismissDialog
         )
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(state.event?.name ?: stringResource(R.string.event_detail_title))},
+                title = { Text(state.event?.name ?: stringResource(R.string.event_detail_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack){
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -119,89 +116,84 @@ fun EventDetailScreen(
                         Button(
                             onClick = { purchaseViewModel.createPurchase(state.selectedQuantities) },
                             enabled = state.canPurchase
-
                         ) {
                             Text(stringResource(R.string.purchase_button))
                         }
-
                     }
                 }
-
             }
-
-            }){ innerPadding ->
-                PullToRefreshBox(
-                    isRefreshing = state.isLoading,
-                    onRefresh = viewModel::loadEvent,
-                    modifier = Modifier.padding(innerPadding)
-                ){
-                    when{
-                        state.isLoading && state.event == null -> {
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
-                                CircularProgressIndicator()
-                            }
-                        }
-                        state.error != null && state.event == null -> {
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
-                                Column(horizontalAlignment = Alignment.CenterHorizontally){
-                                    Text(state.error!!)
-                                    Spacer(Modifier.height(8.dp))
-                                    Button(onClick = viewModel::loadEvent){
-                                        Text(stringResource(R.string.retry))
-                                    }
-                                }
-                            }
-                        }
-                        state.event != null -> {
-                            val event = state.event!!
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ){
-                                item{
-                                    Text(event.name, style = MaterialTheme.typography.headlineSmall)
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(event.venue, style = MaterialTheme.typography.bodyMedium)
-                                    Spacer(Modifier.height(4.dp))
-                                    event.startsAt?.let{
-                                        Text(
-                                            stringResource(R.string.event_starts_at, DateFormatter.format(it)),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-
-                                    event.endsAt?.let {
-                                        Text(
-                                            stringResource(R.string.event_ends_at, DateFormatter.format(it)),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    Text(event.description, style = MaterialTheme.typography.bodyMedium)
-                                    Spacer(Modifier.height(8.dp))
-                                    Text(
-                                        stringResource(R.string.ticket_types_header),
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                }
-                                items(items = event.ticketTypes, key = {it.id}){ tt ->
-                                    TicketTypeRow(
-                                        ticketType = tt,
-                                        quantity = state.selectedQuantities[tt.id] ?: 0,
-                                        onIncrease = { viewModel.increaseQuantity(tt.id)},
-                                        onDecrease = { viewModel.decreaseQuantity(tt.id)}
-                                    )
-
-                                }
-                            }
-
-                        }
-                    }
+        }
+    ) { innerPadding ->
+        PullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh = viewModel::refreshEvent,
+            modifier = Modifier.padding(innerPadding)
+        ){
+            when {
+                state.isLoading && state.event == null -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                        CircularProgressIndicator()
                     }
                 }
+                state.error != null && state.event == null -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                        Column(horizontalAlignment = Alignment.CenterHorizontally){
+                            Text(state.error!!)
+                            Spacer(Modifier.height(8.dp))
+                            Button(onClick = viewModel::loadEvent){
+                                Text(stringResource(R.string.retry))
+                            }
+                        }
+                    }
                 }
+                state.event != null -> {
+                    val event = state.event!!
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ){
+                        item {
+                            Text(event.name, style = MaterialTheme.typography.headlineSmall)
+                            Spacer(Modifier.height(4.dp))
+                            Text(event.venue, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(Modifier.height(4.dp))
+                            event.startsAt?.let {
+                                Text(
+                                    stringResource(R.string.event_starts_at, DateFormatter.format(it)),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            event.endsAt?.let {
+                                Text(
+                                    stringResource(R.string.event_ends_at, DateFormatter.format(it)),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Text(event.description, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                stringResource(R.string.ticket_types_header),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                        items(items = event.ticketTypes, key = { it.id }){ tt ->
+                            TicketTypeRow(
+                                ticketType = tt,
+                                quantity = state.selectedQuantities[tt.id] ?: 0,
+                                onIncrease = { viewModel.increaseQuantity(tt.id) },
+                                onDecrease = { viewModel.decreaseQuantity(tt.id) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun TicketTypeRow(

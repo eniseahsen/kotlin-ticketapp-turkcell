@@ -1,6 +1,5 @@
 package com.turkcell.ticketapp.screen
 
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.turkcell.core.domain.ticket.Ticket
 import com.turkcell.core.domain.ticket.TicketStatus
-
 import com.turkcell.ticketapp.R
 import com.turkcell.ticketapp.viewmodel.MyTicketViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -54,7 +52,7 @@ fun MyTicketsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.my_tickets_title))},
+                title = { Text(stringResource(R.string.my_tickets_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack){
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -64,73 +62,65 @@ fun MyTicketsScreen(
         }
     ){ innerPadding ->
         PullToRefreshBox(
-            isRefreshing = state.isLoading,
-            onRefresh = viewModel::loadTickets,
+            isRefreshing = state.isRefreshing,
+            onRefresh = viewModel::refreshTickets,
             modifier = Modifier.padding(innerPadding)
         ) {
-            when{
+            when {
                 state.isLoading && state.tickets.isEmpty() -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
                         CircularProgressIndicator()
+                    }
+                }
+                state.error != null -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                        Column(horizontalAlignment = Alignment.CenterHorizontally){
+                            Text(state.error!!)
+                            Spacer(Modifier.height(8.dp))
+                            Button(onClick = viewModel::loadTickets){
+                                Text(stringResource(R.string.retry))
+                            }
                         }
                     }
-
-
-            state.error != null -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
-                Column(horizontalAlignment = Alignment.CenterHorizontally){
-                    Text(state.error!!)
-                    Spacer(Modifier.height(8.dp))
-                    Button(onClick = viewModel::loadTickets){
-                        Text(stringResource(R.string.retry))
+                }
+                state.tickets.isEmpty() -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                        Text(stringResource(R.string.no_tickets))
                     }
                 }
-
-
-            }
-        }
-
-            state.tickets.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
-                    Text(stringResource(R.string.no_tickets))
-                }
-        }
-            else -> {
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(items = state.tickets, key = {it.id}){ ticket ->
-                    TicketCard(ticket = ticket, onClick = { onTicketClick(ticket.id)})
+                else -> {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(items = state.tickets, key = { it.id }){ ticket ->
+                            TicketCard(ticket = ticket, onClick = { onTicketClick(ticket.id) })
+                        }
+                    }
                 }
             }
-        }
         }
     }
-}
-
-
 }
 
 @Composable
 private fun TicketCard(ticket: Ticket, onClick: () -> Unit){
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .clickable(onClick = onClick)
-
     ){
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment =Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Column(modifier = Modifier.weight(1f)){
                 Text(ticket.id, style = MaterialTheme.typography.bodySmall)
                 Text(ticket.ticketTypeId, style = MaterialTheme.typography.bodyMedium)
-
             }
             StatusChip(ticket.status)
         }
@@ -139,7 +129,7 @@ private fun TicketCard(ticket: Ticket, onClick: () -> Unit){
 
 @Composable
 private fun StatusChip(status: TicketStatus){
-    val(label, color) = when (status){
+    val (label, color) = when (status){
         TicketStatus.VALID -> Pair("Geçerli", MaterialTheme.colorScheme.primary)
         TicketStatus.USED -> Pair("Kullanıldı", MaterialTheme.colorScheme.outline)
         TicketStatus.CANCELLED -> Pair("İptal", MaterialTheme.colorScheme.error)

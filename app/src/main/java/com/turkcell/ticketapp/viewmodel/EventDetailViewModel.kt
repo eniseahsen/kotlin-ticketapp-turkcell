@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 
 data class EventDetailUiState(
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val event: Event? = null,
     val error: String? = null,
     val selectedQuantities: Map<String, Int> = emptyMap()
@@ -24,16 +25,14 @@ data class EventDetailUiState(
         get() = event?.ticketTypes?.sumOf { tt ->
             tt.priceCents * (selectedQuantities[tt.id] ?: 0)
         } ?: 0L
-    //0L: long tipinde sıfır
     val canPurchase: Boolean
         get() = totalCents > 0
 }
 
-class EventDetailViewModel (
+class EventDetailViewModel(
     savedStateHandle: SavedStateHandle,
     private val eventRepository: EventRepository
 ) : ViewModel(){
-    //Navigation ile gelen EventDetail objesini al -> içinden id’yi çek
     private val eventId: String = savedStateHandle.toRoute<EventDetail>().id
 
     private val _state = MutableStateFlow(EventDetailUiState())
@@ -44,24 +43,33 @@ class EventDetailViewModel (
     }
 
     fun loadEvent(){
-        _state.update { it.copy(isLoading = true, error = null)}
+        if (_state.value.isLoading) return
+        _state.update { it.copy(isLoading = true, error = null) }
+        fetchEvent()
+    }
+
+    fun refreshEvent(){
+        if (_state.value.isRefreshing) return
+        _state.update { it.copy(isRefreshing = true, error = null) }
+        fetchEvent()
+    }
+
+    private fun fetchEvent(){
         viewModelScope.launch {
             eventRepository.getEvent(eventId).fold(
                 onSuccess = { event ->
-                    _state.update { it.copy(isLoading = false, event = event, selectedQuantities = emptyMap())}
+                    _state.update { it.copy(isLoading = false, isRefreshing = false, event = event, selectedQuantities = emptyMap()) }
                 },
                 onFailure = { e ->
-                    _state.update { it.copy(isLoading = false, error = e.toUserMessage())}
+                    _state.update { it.copy(isLoading = false, isRefreshing = false, error = e.toUserMessage()) }
                 }
-
             )
-
         }
     }
 
     fun increaseQuantity(ticketTypeId: String){
         val event = _state.value.event ?: return
-        val tt = event.ticketTypes.find { it.id == ticketTypeId} ?: return
+        val tt = event.ticketTypes.find { it.id == ticketTypeId } ?: return
         val max = minOf(20, tt.remaining.toInt())
         val current = _state.value.selectedQuantities[ticketTypeId] ?: 0
         if (current >= max) return
@@ -72,9 +80,9 @@ class EventDetailViewModel (
 
     fun decreaseQuantity(ticketTypeId: String){
         val current = _state.value.selectedQuantities[ticketTypeId] ?: 0
-        if (current<=0) return
+        if (current <= 0) return
         _state.update { s ->
-            val newQty = current -1
+            val newQty = current - 1
             val updated = if (newQty == 0)
                 s.selectedQuantities - ticketTypeId
             else
@@ -82,6 +90,4 @@ class EventDetailViewModel (
             s.copy(selectedQuantities = updated)
         }
     }
-
-
 }

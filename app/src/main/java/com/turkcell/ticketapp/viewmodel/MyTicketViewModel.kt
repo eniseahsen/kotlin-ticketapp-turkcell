@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 
 data class MyTicketUiState(
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val tickets: List<Ticket> = emptyList(),
     val error: String? = null
 )
@@ -24,21 +25,30 @@ class MyTicketViewModel(
     private val _state = MutableStateFlow(MyTicketUiState())
     val state: StateFlow<MyTicketUiState> = _state.asStateFlow()
 
-    init{ loadTickets()}
+    init { loadTickets() }
 
     fun loadTickets(){
         if(_state.value.isLoading) return
-        _state.update { it.copy(isLoading = true, error = null)}
+        _state.update { it.copy(isLoading = true, error = null) }
+        fetchTickets()
+    }
+
+    fun refreshTickets(){
+        if(_state.value.isRefreshing) return
+        _state.update { it.copy(isRefreshing = true, error = null) }
+        fetchTickets()
+    }
+
+    private fun fetchTickets(){
         viewModelScope.launch {
             ticketRepository.getMyTickets().fold(
                 onSuccess = { list ->
-                    _state.update { it.copy(isLoading = false, tickets = list)}
+                    _state.update { it.copy(isLoading = false, isRefreshing = false, tickets = list) }
                 },
                 onFailure = { e ->
-                    _state.update { it.copy(isLoading = false, error = e.toUserMessage())}
+                    _state.update { it.copy(isLoading = false, isRefreshing = false, error = e.toUserMessage()) }
                 }
             )
         }
     }
-
 }
