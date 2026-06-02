@@ -1,7 +1,7 @@
 package com.turkcell.data.util
 
-import com.turkcell.core.domain.exception.ApiException
-import com.turkcell.core.domain.exception.NetworkException
+import com.turkcell.core.exception.ApiException
+import com.turkcell.core.exception.NetworkException
 import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException

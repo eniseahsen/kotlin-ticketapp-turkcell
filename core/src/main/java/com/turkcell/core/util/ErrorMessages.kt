@@ -1,7 +1,7 @@
 package com.turkcell.core.util
 
-import com.turkcell.core.domain.exception.ApiException
-import com.turkcell.core.domain.exception.NetworkException
+import com.turkcell.core.exception.ApiException
+import com.turkcell.core.exception.NetworkException
 
 
 fun Throwable.toUserMessage(): String = when (this){

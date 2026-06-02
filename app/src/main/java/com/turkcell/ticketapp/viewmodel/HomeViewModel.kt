@@ -14,9 +14,11 @@ import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val isEventsLoading: Boolean = false,
+    val isEventsRefreshing: Boolean = false,
     val events: List<Event> = emptyList(),
     val eventsError: String? = null,
     val isTicketsLoading: Boolean = false,
+    val isTicketsRefreshing: Boolean = false,
     val tickets: List<Ticket> = emptyList(),
     val ticketsError: String? = null
 )
@@ -36,20 +38,44 @@ class HomeViewModel(
     fun loadEvents() {
         if (_state.value.isEventsLoading) return
         _state.update { it.copy(isEventsLoading = true, eventsError = null) }
+        fetchEvents()
+    }
+
+    fun loadTickets() {
+        if (_state.value.isTicketsLoading) return
+        _state.update { it.copy(isTicketsLoading = true, ticketsError = null) }
+        fetchTickets()
+    }
+
+    fun refreshAll() {
+        if (_state.value.isEventsRefreshing) return
+        _state.update { it.copy(isEventsRefreshing = true, isTicketsRefreshing = true, eventsError = null, ticketsError = null) }
+        fetchEvents()
+        fetchTickets()
+    }
+
+    private fun fetchEvents() {
         viewModelScope.launch {
             eventRepository.getEvents().fold(
-                onSuccess = { list -> _state.update { it.copy(events = list, isEventsLoading = false, eventsError = null) } },
-                onFailure = { e -> _state.update { it.copy(isEventsLoading = false, eventsError = e.message ?: "Etkinlikler yüklenemedi.") } }
+                onSuccess = { list ->
+                    _state.update { it.copy(events = list, isEventsLoading = false, isEventsRefreshing = false, eventsError = null) }
+                },
+                onFailure = { e ->
+                    _state.update { it.copy(isEventsLoading = false, isEventsRefreshing = false, eventsError = e.message ?: "Etkinlikler yüklenemedi.") }
+                }
             )
         }
     }
 
-    fun loadTickets() {
-        _state.update { it.copy(isTicketsLoading = true, ticketsError = null) }
+    private fun fetchTickets() {
         viewModelScope.launch {
             ticketRepository.getMyTickets().fold(
-                onSuccess = { list -> _state.update { it.copy(tickets = list, isTicketsLoading = false) } },
-                onFailure = { e -> _state.update { it.copy(isTicketsLoading = false, ticketsError = e.message ?: "Biletler yüklenemedi.") } }
+                onSuccess = { list ->
+                    _state.update { it.copy(tickets = list, isTicketsLoading = false, isTicketsRefreshing = false) }
+                },
+                onFailure = { e ->
+                    _state.update { it.copy(isTicketsLoading = false, isTicketsRefreshing = false, ticketsError = e.message ?: "Biletler yüklenemedi.") }
+                }
             )
         }
     }

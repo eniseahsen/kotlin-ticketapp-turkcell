@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -30,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,16 +40,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.turkcell.core.domain.auth.AuthRepository
-import com.turkcell.core.domain.ticket.Ticket
 import com.turkcell.core.domain.event.Event
+import com.turkcell.core.domain.ticket.Ticket
 import com.turkcell.ticketapp.R
-import com.turkcell.ticketapp.viewmodel.HomeUiState
-
 import com.turkcell.ticketapp.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,42 +67,49 @@ fun HomeScreen(
                     Text(text = stringResource(R.string.coming_events))
                 },
                 actions = {
-                    // Biletlerim butonu
-                    IconButton(onClick = onMyTicketClick){
+                    IconButton(onClick = onMyTicketClick) {
                         Icon(Icons.Default.ConfirmationNumber, contentDescription = "Biletlerim")
                     }
-                    // Çıkış → token silinir → isLoggedIn false → login'e düşer
-                    IconButton(onClick = {scope.launch { authRepository.logout() }}){
-                        Icon(Icons.AutoMirrored.Filled.Logout,contentDescription = "Çıkış")
+                    IconButton(onClick = { scope.launch { authRepository.logout() } }) {
+                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Çıkış")
                     }
                 }
             )
         }
     ) { innerPadding ->
-
-        Surface (modifier= Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 24.dp)) {
-                Spacer(Modifier.height(8.dp))
-                EventsRow(isLoading = state.isEventsLoading, error=state.eventsError, events=state.events, onEventClick = onEventClick)
-
-
-                Spacer(Modifier.height(12.dp))
-                Text("Satın Alınmış Biletler")
-                Spacer(Modifier.height(8.dp))
-                TicketsColumn(
-                    isLoading = state.isTicketsLoading,
-                    error = state.ticketsError,
-                    tickets = state.tickets,
-                    onTicketClick = onTicketClick
-                )
+        Surface(modifier = Modifier.fillMaxSize()) {
+            PullToRefreshBox(
+                isRefreshing = state.isEventsRefreshing,
+                onRefresh = viewModel::refreshAll,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(horizontal = 24.dp)
+                ) {
+                    Spacer(Modifier.height(8.dp))
+                    EventsRow(
+                        isLoading = state.isEventsLoading,
+                        error = state.eventsError,
+                        events = state.events,
+                        onEventClick = onEventClick
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text("Satın Alınmış Biletler")
+                    Spacer(Modifier.height(8.dp))
+                    TicketsColumn(
+                        isLoading = state.isTicketsLoading,
+                        error = state.ticketsError,
+                        tickets = state.tickets,
+                        onTicketClick = onTicketClick
+                    )
+                }
             }
         }
     }
-
-
 }
-
-
 
 @Composable
 private fun TicketsColumn(
@@ -145,7 +149,7 @@ private fun EventsRow(
 ) {
     when {
         isLoading -> {
-            Box(modifier = Modifier.fillMaxWidth().height(220.dp)){
+            Box(modifier = Modifier.fillMaxWidth().height(220.dp)) {
                 CircularProgressIndicator()
             }
         }
@@ -153,21 +157,20 @@ private fun EventsRow(
             Text(error)
         }
         events.isEmpty() -> {
-            Text(text=stringResource(R.string.no_event),style= MaterialTheme.typography.bodyMedium)
+            Text(text = stringResource(R.string.no_event), style = MaterialTheme.typography.bodyMedium)
         }
         else -> {
             LazyRow(contentPadding = PaddingValues(horizontal = 24.dp)) {
-                items(items=events, key = {it.id}) {event ->
-                    EventCard(event,
-                        onClick = { onEventClick(event.id)})}
+                items(items = events, key = { it.id }) { event ->
+                    EventCard(event, onClick = { onEventClick(event.id) })
+                }
             }
         }
     }
 }
 
 @Composable
-private fun EventCard(event: Event, onClick: () -> Unit)
-{
+private fun EventCard(event: Event, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.width(260.dp).height(280.dp)
