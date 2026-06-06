@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.turkcell.core.domain.auth.AuthRepository
+import com.turkcell.core.domain.auth.UserRole
 import com.turkcell.core.domain.event.Event
 import com.turkcell.core.domain.ticket.Ticket
 import com.turkcell.ticketapp.R
@@ -55,6 +57,7 @@ fun HomeScreen(
     onTicketClick: (String) -> Unit,
     onEventClick: (String) -> Unit,
     onMyTicketClick: () -> Unit,
+    onStaffClick: () -> Unit,
     authRepository: AuthRepository = koinInject()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -69,6 +72,11 @@ fun HomeScreen(
                 actions = {
                     IconButton(onClick = onMyTicketClick) {
                         Icon(Icons.Default.ConfirmationNumber, contentDescription = "Biletlerim")
+                    }
+                    if (state.userRole == UserRole.STAFF || state.userRole == UserRole.ADMIN) {
+                        IconButton(onClick = onStaffClick) {
+                            Icon(Icons.Default.QrCodeScanner, contentDescription = "Check-in")
+                        }
                     }
                     IconButton(onClick = { scope.launch { authRepository.logout() } }) {
                         Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Çıkış")

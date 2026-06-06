@@ -2,6 +2,7 @@ package com.turkcell.data.di
 
 import android.R.attr.level
 import com.turkcell.core.domain.auth.AuthRepository
+import com.turkcell.core.domain.checkin.CheckinRepository
 import com.turkcell.core.domain.event.EventRepository
 import com.turkcell.core.domain.purchase.PurchaseRepository
 import com.turkcell.data.local.TokenStore
@@ -15,6 +16,8 @@ import com.turkcell.data.repository.AuthRepositoryImpl
 import com.turkcell.data.repository.EventRepositoryImpl
 import com.turkcell.data.repository.PurchaseRepositoryImpl
 import com.turkcell.core.domain.ticket.TicketRepository
+import com.turkcell.data.remote.CheckinApi
+import com.turkcell.data.repository.CheckinRepositoryImpl
 import com.turkcell.data.repository.TicketRepositoryImpl
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -140,6 +143,14 @@ val dataModule = module {
 
     single<TicketRepository>{
         TicketRepositoryImpl(meApi = get())
+    }
+
+    single {
+        get<Retrofit>().create(CheckinApi::class.java)
+    }
+
+    single<CheckinRepository> {
+        CheckinRepositoryImpl(checkinApi = get())
     }
 
 

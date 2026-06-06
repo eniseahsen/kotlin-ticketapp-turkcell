@@ -49,6 +49,7 @@
 
     <string name="my_tickets_title">Biletlerim</string>
     <string name="no_tickets">Satın Alınmış Bilet Yok</string>
+    <string name="passed">✓ Geçti</string>
 
 
 </resources>

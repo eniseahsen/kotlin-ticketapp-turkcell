@@ -21,3 +21,6 @@ data class EventDetail(val id: String)
 
 @Serializable
 object MyTickets
+
+@Serializable
+object Staff

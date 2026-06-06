@@ -1,5 +1,6 @@
 package com.turkcell.data.mapper
 
+import com.turkcell.core.domain.checkin.CheckinResult
 import com.turkcell.core.domain.ticket.Ticket
 import com.turkcell.core.domain.ticket.TicketStatus
 import com.turkcell.core.domain.event.Event
@@ -7,6 +8,7 @@ import com.turkcell.core.domain.event.TicketType
 import com.turkcell.core.domain.purchase.Purchase
 import com.turkcell.core.domain.purchase.PurchaseItem
 import com.turkcell.core.domain.purchase.PurchaseStatus
+import com.turkcell.data.dto.checkin.CheckinResultDto
 import com.turkcell.data.dto.event.TicketTypeDto
 import com.turkcell.data.dto.event.EventDto
 import com.turkcell.data.dto.event.TicketDto
@@ -47,4 +49,11 @@ internal fun PurchaseDto.toDomain(): Purchase = Purchase(
     items = items.map { PurchaseItem(it.ticketTypeId, it.quantity) },
     tickets = tickets.map { it.toDomain()}
 
+)
+
+internal fun CheckinResultDto.toDomain(): CheckinResult = CheckinResult(
+    ticketId = ticketId,
+    ticketType = ticketType,
+    event = event.toDomain(),
+    checkedInAt = checkedInAt
 )

@@ -76,6 +76,7 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     //coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation(libs.qrcode.kotlin)
+    implementation(libs.zxing.android.embedded)
 
 
 }

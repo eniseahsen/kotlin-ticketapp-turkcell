@@ -26,6 +26,7 @@ import com.turkcell.ticketapp.screen.HomeScreen
 import com.turkcell.ticketapp.screen.LoginScreen
 import com.turkcell.ticketapp.screen.MyTicketsScreen
 import com.turkcell.ticketapp.screen.RegisterScreen
+import com.turkcell.ticketapp.screen.StaffScreen
 import com.turkcell.ticketapp.screen.TicketDetailScreen
 import com.turkcell.ticketapp.viewmodel.HomeViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -94,7 +95,8 @@ private fun AuthedNavHost(navController: NavHostController) {
             HomeScreen(
                 onEventClick = { eventId -> navController.navigate(EventDetail(eventId)) },
                 onTicketClick = { ticketId -> navController.navigate(TicketDetail(ticketId)) },
-                onMyTicketClick = { navController.navigate(MyTickets)}
+                onMyTicketClick = { navController.navigate(MyTickets)},
+                onStaffClick = { navController.navigate(Staff) }
             )
         }
 
@@ -124,6 +126,12 @@ private fun AuthedNavHost(navController: NavHostController) {
         composable<TicketDetail>{
             TicketDetailScreen(
                 onNavigateBack = { navController.popBackStack()}
+            )
+        }
+
+        composable<Staff> {
+            StaffScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

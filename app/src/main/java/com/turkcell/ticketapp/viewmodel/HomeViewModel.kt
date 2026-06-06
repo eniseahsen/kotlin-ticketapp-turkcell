@@ -2,6 +2,8 @@ package com.turkcell.ticketapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.turkcell.core.domain.auth.AuthRepository
+import com.turkcell.core.domain.auth.UserRole
 import com.turkcell.core.domain.event.Event
 import com.turkcell.core.domain.event.EventRepository
 import com.turkcell.core.domain.ticket.Ticket
@@ -20,12 +22,14 @@ data class HomeUiState(
     val isTicketsLoading: Boolean = false,
     val isTicketsRefreshing: Boolean = false,
     val tickets: List<Ticket> = emptyList(),
-    val ticketsError: String? = null
+    val ticketsError: String? = null,
+    val userRole: UserRole = UserRole.USER
 )
 
 class HomeViewModel(
     private val eventRepository: EventRepository,
-    private val ticketRepository: TicketRepository
+    private val ticketRepository: TicketRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(HomeUiState())
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
@@ -33,6 +37,15 @@ class HomeViewModel(
     init {
         loadEvents()
         loadTickets()
+        observeUserRole()
+    }
+
+    private fun observeUserRole(){
+        viewModelScope.launch{
+            authRepository.userRole.collect { role ->
+                _state.update { it.copy(userRole = role) }
+            }
+        }
     }
 
     fun loadEvents() {
