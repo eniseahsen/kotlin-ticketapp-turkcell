@@ -2,8 +2,12 @@ package com.turkcell.ticketapp.screen
 
 import android.Manifest
 import android.R.attr.onClick
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import com.turkcell.ticketapp.R
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -41,6 +46,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.MultiFormatReader
+import com.google.zxing.RGBLuminanceSource
+import com.google.zxing.common.HybridBinarizer
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.turkcell.core.util.DateFormatter
@@ -79,12 +88,13 @@ fun StaffScreen(
     }
 
     fun startCameraScan(){
-        val options = ScanOptions().apply{
+        val options = ScanOptions().apply {
             setDesiredBarcodeFormats(ScanOptions.QR_CODE)
             setPrompt("QR Kodu Çerçeveye Getir")
             setBeepEnabled(true)
-            setOrientationLocked(false)
+            setOrientationLocked(true)
             setBarcodeImageEnabled(false)
+            setCameraId(0)
         }
         scanLauncher.launch(options)
     }
@@ -98,6 +108,42 @@ fun StaffScreen(
         }
     }
 
+    fun decodeQrFromUri(context: Context, uri: Uri): String? {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val bitmap = BitmapFactory.decodeStream(inputStream)?: return null
+
+        val intArray = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(intArray, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+
+        val source = RGBLuminanceSource(bitmap.width, bitmap.height, intArray)
+        val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
+
+        return try {
+            MultiFormatReader().decode(binaryBitmap).text
+        } catch (e: Exception) {
+            null
+        }
+
+
+
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ){
+        uri ->
+        if(uri!=null){
+            val qr = decodeQrFromUri(context, uri)
+            if (qr != null){
+                viewModel.onQrDetected(qr)
+            }
+        }
+
+    }
+
+
+
+
     fun onScanClick(){
         val granted = ContextCompat.checkSelfPermission(
             context, Manifest.permission.CAMERA
@@ -105,6 +151,12 @@ fun StaffScreen(
 
         if (granted) startCameraScan()
         else cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+
+    fun onGalleryClick() {
+        galleryLauncher.launch(
+            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+        )
     }
 
     Scaffold(
@@ -175,6 +227,12 @@ fun StaffScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("QR Kodu Tara")
+                    }
+                    OutlinedButton(
+                        onClick = { onGalleryClick()},
+                        modifier = Modifier.fillMaxWidth()
+                    ){
+                        Text("Galeriden Seç")
                     }
                 }
             }

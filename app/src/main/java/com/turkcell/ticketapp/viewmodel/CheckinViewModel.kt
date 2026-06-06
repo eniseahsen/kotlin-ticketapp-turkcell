@@ -1,5 +1,6 @@
 package com.turkcell.ticketapp.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.turkcell.core.domain.checkin.CheckinRepository
@@ -49,6 +50,7 @@ class CheckinViewModel(
     fun onPermissionDenied() = _state.update {
         it.copy(error = "Kamera izni olmadan QR taranamaz.")
     }
+
 
 
 

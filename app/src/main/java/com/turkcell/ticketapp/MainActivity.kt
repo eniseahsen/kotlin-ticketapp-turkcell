@@ -13,7 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 
 import com.turkcell.ticketapp.navigation.AppNavHost
 import com.turkcell.ticketapp.screen.LoginScreen
-
+import org.koin.androidx.compose.KoinAndroidContext
 
 
 class MainActivity : ComponentActivity() {
@@ -23,7 +23,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             TicketAppTheme {
 
-                AppNavHost()
+                KoinAndroidContext {
+                    AppNavHost()
+                }
 
             }
 
