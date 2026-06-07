@@ -175,13 +175,11 @@ Her ViewModel:
 
 `data` modülü, `core` içinde tanımlanan repository arayüzlerinin gerçek uygulamasını sağlar.
 
-### 4.1 Yapılandırma
 
-- `data/build.gradle.kts`
-  - Android library olarak tanımlanmış
-  - Retrofit, OkHttp, Kotlin Serialization, DataStore ve Koin bağımlılıkları eklenmiş
 
-### 4.2 Bağımlılık Modülü
+
+
+### 4.1 Bağımlılık Modülü
 
 - `data/src/main/java/com/turkcell/data/di/DataModule.kt`
   - `Json` serileştirici
@@ -192,7 +190,7 @@ Her ViewModel:
   - Repository implementasyonları (`AuthRepositoryImpl`, `EventRepositoryImpl`, `PurchaseRepositoryImpl`, `TicketRepositoryImpl`, `CheckinRepositoryImpl`)
   - `TokenStore` singleton olarak Koin içinde sağlanır
 
-### 4.3 Veri Erişim Katmanı
+### 4.2 Veri Erişim Katmanı
 
 - `data/remote/`
   - API son noktalarını tanımlayan Retrofit arayüzleri
@@ -221,7 +219,7 @@ Her ViewModel:
 - `data/util/`
   - API çağrılarını sararak hata yakalama ve `Result` dönüşü sağlama gibi yardımcı fonksiyonlar
 
-### 4.4 Önemli Teknolojiler
+### 4.3 Önemli Teknolojiler
 
 - `Retrofit` + `Kotlinx Serialization`
 - `OkHttp Interceptor` + `Authenticator`
