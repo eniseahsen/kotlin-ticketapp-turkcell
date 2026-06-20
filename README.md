@@ -1,284 +1,282 @@
 # TicketApp
 
-**TicketApp**, Android için modüler bir bilet yönetim uygulamasıdır. Bu proje:
+**TicketApp** is a modular ticket management application for Android. This project:
 
-- `app` modülü ile kullanıcı arayüzünü ve uygulama akışını oluşturur
-- `core` modülü ile bağımlılık olmayan domain modellerini, repository arayüzlerini ve ortak UI/yardımcı yapılarını içerir
-- `data` modülü ile API, veri erişimi, token yönetimi ve uygulama dışı katmanla iletişimi sağlar
+- Creates the user interface and application flow with the `app` module
+- Contains dependency-free domain models, repository interfaces, and common UI/helper structures with the `core` module
+- Provides API, data access, token management, and communication with the external layer through the `data` module
 
-Proje aynı zamanda:
-- Jetpack Compose ile modern UI
-- Koin ile bağımlılık yönetimi
-- Retrofit / OkHttp ile REST API iletişimi
-- DataStore ile token saklama
-- MVVM + StateFlow ile reaktif durum yönetimi
-- Compose Navigation ile ekranlar arası yönlendirme
-- QR kod ve bilet kontrol senaryoları için ZXing destekli kütüphaneleri içerir
+The project also includes:
+- Modern UI with Jetpack Compose
+- Dependency management with Koin
+- REST API communication with Retrofit / OkHttp
+- Token storage with DataStore
+- Reactive state management with MVVM + StateFlow
+- Screen navigation with Compose Navigation
+- ZXing-supported libraries for QR code and ticket validation scenarios
 
 ---
 
 
-### 1. Root Dosyaları
+## 1. Root Files
 
 - `settings.gradle.kts`
-  - Projedeki modülleri belirler: `:app`, `:core`, `:data`
-  - Gradle plugin yönetimi ve bağımlılık çözümleme için repository yapılandırmasını içerir
+  - Defines the project modules: `:app`, `:core`, `:data`
+  - Contains repository configuration for Gradle plugin management and dependency resolution
 
 - `build.gradle.kts`
-  - Ortak Gradle eklentilerini alias olarak tanımlar
-  - Alt modüllerin bu eklentileri kullanmasını sağlar
+  - Defines common Gradle plugins as aliases
+  - Allows submodules to use these plugins
 
 - `gradle/libs.versions.toml`
-  - Proje bağımlılık versiyonlarını merkezi olarak tutar
-  - `app`, `core`, `data` modülleri bu versiyon kataloğuna referans verir
+  - Centrally stores project dependency versions
+  - `app`, `core`, and `data` modules reference this version catalog
 
 ---
 
-## 2. `app` Modülü
+## 2. `app` Module
 
-`app` modülü, uygulamanın runtime tarafını ve kullanıcı arayüzünü barındırır.
+The `app` module contains the runtime side of the application and the user interface.
 
 
 
-### 2.1 Dependecy Injection
+### 2.1 Dependency Injection
 
 - `app/src/main/java/com/turkcell/ticketapp/di/appModule.kt`
-  - ViewModel sınıflarını Koin `viewModelOf(::XyzViewModel)` şeklinde kayıt eder
+  - Registers ViewModel classes using Koin `viewModelOf(::XyzViewModel)`
   - `LoginViewModel`, `RegisterViewModel`, `HomeViewModel`, `EventDetailViewModel`,
     `PurchaseViewModel`, `MyTicketViewModel`, `TicketDetailViewModel`, `CheckinViewModel`
-    burada tanımlanır
+    are defined here
 
-### 2.3 Navigasyon
+### 2.3 Navigation
 
 - `app/src/main/java/com/turkcell/ticketapp/navigation/AppNavHost.kt`
-  - Uygulamanın auth durumuna göre yönlendirme yapar
-  - `AuthRepository.isLoggedIn` akışını izleyerek:
-    - `null` ise splash yükleme ekranı
-    - `true` ise yetkili navigasyon
-    - `false` ise login/register akışı
-  - `AuthedNavHost` ile `Home`, `EventDetail`, `MyTickets`, `TicketDetail`, `Staff`
-    ekranlarını yönetir
+  - Performs navigation according to the authentication state of the application
+  - Observes the `AuthRepository.isLoggedIn` flow:
+    - `null` → splash loading screen
+    - `true` → authenticated navigation
+    - `false` → login/register flow
+  - Manages `Home`, `EventDetail`, `MyTickets`, `TicketDetail`, `Staff`
+    screens with `AuthedNavHost`
 
 - `app/src/main/java/com/turkcell/ticketapp/navigation/AppDestinations.kt`
-  - Her ekran için serializable hedef nesneleri tanımlar
-  - Ekranlar arasında navigasyon sağlar
+  - Defines serializable destination objects for each screen
+  - Provides navigation between screens
 
-### 2.4 Ekranlar
+### 2.4 Screens
 
 `app/src/main/java/com/turkcell/ticketapp/screen/`
 
 - `LoginScreen.kt`
-  - Email ve şifre girişi
-  - Şifre görünürlüğünü aç/kapat
-  - Login işlemini tetikler
-  - Hata mesajlarını `Snackbar` ile gösterir
+  - Email and password input
+  - Toggle password visibility
+  - Triggers login operation
+  - Displays error messages with `Snackbar`
 
 - `RegisterScreen.kt`
-  - Yeni kullanıcı kaydı için form
-  - Kayıt tamamlandığında `Home` ekranına yönlendirir
+  - Form for creating a new user account
+  - Navigates to the `Home` screen after registration is completed
 
 - `HomeScreen.kt`
-  - Etkinlik ve bilet listelerini gösterir
-  - Kullanıcı rolüne göre `Staff` erişimi
-  - Event / Ticket detay sayfalarına geçiş sağlar
+  - Displays event and ticket lists
+  - Provides `Staff` access according to user role
+  - Enables navigation to Event / Ticket detail pages
 
 - `EventDetailScreen.kt`
-  - Seçilen etkinliğin detaylarını gösterir
-  - Bilet tipi seçimi ve adet artırma/azaltma
-  - Satın alma akışını başlatır
+  - Displays details of the selected event
+  - Ticket type selection and quantity increase/decrease
+  - Starts the purchase flow
 
 - `PurchaseConfirmDialog.kt`
-  - Satın alma işlemini onaylamak için modal dialog
-  - Ödeme sonrası yönlendirme mantığı içerir
+  - Modal dialog to confirm purchase operation
+  - Contains post-payment navigation logic
 
 - `MyTicketsScreen.kt`
-  - Kullanıcının sahip olduğu biletleri listeler
-  - Bilet detayına geçiş sağlar
+  - Lists the user's owned tickets
+  - Provides navigation to ticket details
 
 - `TicketDetailScreen.kt`
-  - Seçilen biletin detaylarını gösterir
+  - Displays the details of the selected ticket
 
 - `StaffScreen.kt`
-  - Görevli personel için bilet kontrol/okuma senaryosu içerir
-  - ZXing kütüphaneleri QR kod tarama için kullanılır
+  - Contains ticket validation/scanning scenarios for staff members
+  - Uses ZXing libraries for QR code scanning
 
-### 2.5 ViewModel Katmanı
+### 2.5 ViewModel Layer
 
 `app/src/main/java/com/turkcell/ticketapp/viewmodel/`
 
-Her ViewModel:
-- UI durumunu `StateFlow` ile yönetir
-- Repository arayüzlerini kullanarak veri çeker
-- Hata yönetimini `toUserMessage()` ile kullanıcıya uygun hale getirir
-- `viewModelScope.launch { ... }` ile coroutine tabanlı async işlemler yapar
+Each ViewModel:
+- Manages UI state with `StateFlow`
+- Fetches data using repository interfaces
+- Converts errors into user-friendly messages with `toUserMessage()`
+- Performs coroutine-based asynchronous operations with `viewModelScope.launch { ... }`
 
-- `LoginViewModel.kt` → giriş işlemi, form validasyonu, hataların yönetimi
-- `RegisterViewModel.kt` → yeni kullanıcı kaydı
-- `HomeViewModel.kt` → etkinlik ve bilet yükleme, refresh, kullanıcı rolü gözlemi
-- `EventDetailViewModel.kt` → tek etkinlik detayları, bilet miktarı seçimi
-- `PurchaseViewModel.kt` → satın alma oluşturma ve ödeme onayı
-- `MyTicketViewModel.kt` → kullanıcının bilet listesini yükleme
-- `TicketDetailViewModel.kt` → tek bilet detayları
-- `CheckinViewModel.kt` → personel veya check-in senaryosunun yönetimi
+- `LoginViewModel.kt` → login operation, form validation, error handling
+- `RegisterViewModel.kt` → new user registration
+- `HomeViewModel.kt` → loading events and tickets, refresh, observing user role
+- `EventDetailViewModel.kt` → single event details, ticket quantity selection
+- `PurchaseViewModel.kt` → creating purchase and payment confirmation
+- `MyTicketViewModel.kt` → loading user's ticket list
+- `TicketDetailViewModel.kt` → single ticket details
+- `CheckinViewModel.kt` → managing staff or check-in scenarios
 
 
 
 ---
 
-## 3. `core` Modülü
+## 3. `core` Module
 
-`core` modülü, uygulamanın bağımlılıklardan bağımsız domain tanımlarını taşır.
+The `core` module contains domain definitions independent from application dependencies.
 
 
 
-### 3.1 Domain ve Arayüzler
+### 3.1 Domain and Interfaces
 
 `core/src/main/java/com/turkcell/core/domain/`
 
 - `auth/`
-  - `AuthRepository.kt` → giriş, kayıt, çıkış, oturum durumu, kullanıcı rolü için sözleşme
-  - `AuthSession.kt`, `User.kt`, `UserRole.kt` → kimlik bilgileri ve roller
+  - `AuthRepository.kt` → contract for login, registration, logout, session state, and user role
+  - `AuthSession.kt`, `User.kt`, `UserRole.kt` → authentication information and roles
 
 - `event/`
-  - `EventRepository.kt` → etkinlik listesini ve tek etkinliği tanımlar
-  - `Event.kt`, `TicketType.kt` → etkinlik modeli ve bilet tipi modeli
+  - `EventRepository.kt` → defines event list and single event operations
+  - `Event.kt`, `TicketType.kt` → event model and ticket type model
 
 - `ticket/`
-  - `TicketRepository.kt` → bilet sorgulama sözleşmesi
-  - `Ticket.kt`, `TicketStatus.kt` → biletin durum bilgisi
+  - `TicketRepository.kt` → ticket query contract
+  - `Ticket.kt`, `TicketStatus.kt` → ticket status information
 
 - `purchase/`
-  - `PurchaseRepository.kt` → satın alma oluşturma ve ödeme onayı
-  - `PurchaseDomain.kt` → satın alma için domain modeli
+  - `PurchaseRepository.kt` → creating purchase and payment confirmation
+  - `PurchaseDomain.kt` → domain model for purchase
 
 - `checkin/`
-  - `CheckinRepository.kt` → bilet check-in / personel doğrulama mantığı
+  - `CheckinRepository.kt` → ticket check-in / staff validation logic
 
-### 3.2 Ortak Yardımcılar
+### 3.2 Common Utilities
 
 - `core/exception/`
-  - `ApiException`, `NetworkException` gibi hata tipleri
+  - Error types such as `ApiException`, `NetworkException`
 
 - `core/util/ErrorMessages.kt`
   - `Throwable.toUserMessage()`
-  - Hataları kullanıcı dostu mesajlara çevirir
-  - Örnekler: `401`, `403`, `404`, `409`, `500+`, ağ hatası
+  - Converts errors into user-friendly messages
+  - Examples: `401`, `403`, `404`, `409`, `500+`, network error
 
 - `core/ui/`
-  - Tema ve ortak UI bileşenleri bulunduğu klasör
+  - Contains theme and common UI components
 
 
 
 ---
 
-## 4. `data` Modülü
+## 4. `data` Module
 
-`data` modülü, `core` içinde tanımlanan repository arayüzlerinin gerçek uygulamasını sağlar.
-
-
+The `data` module provides the real implementations of repository interfaces defined in `core`.
 
 
 
-### 4.1 Bağımlılık Modülü
+
+
+### 4.1 Dependency Module
 
 - `data/src/main/java/com/turkcell/data/di/DataModule.kt`
-  - `Json` serileştirici
+  - `Json` serializer
   - OkHttp `HttpLoggingInterceptor`
-  - `AuthInterceptor` ve `TokenAuthenticator`
-  - `Retrofit` örnekleri
-  - API arayüzleri (`AuthApi`, `EventApi`, `PurchaseApi`, `MeApi`, `CheckinApi`)
-  - Repository implementasyonları (`AuthRepositoryImpl`, `EventRepositoryImpl`, `PurchaseRepositoryImpl`, `TicketRepositoryImpl`, `CheckinRepositoryImpl`)
-  - `TokenStore` singleton olarak Koin içinde sağlanır
+  - `AuthInterceptor` and `TokenAuthenticator`
+  - `Retrofit` instances
+  - API interfaces (`AuthApi`, `EventApi`, `PurchaseApi`, `MeApi`, `CheckinApi`)
+  - Repository implementations (`AuthRepositoryImpl`, `EventRepositoryImpl`, `PurchaseRepositoryImpl`, `TicketRepositoryImpl`, `CheckinRepositoryImpl`)
+  - Provides `TokenStore` as a singleton inside Koin
 
-### 4.2 Veri Erişim Katmanı
+### 4.2 Data Access Layer
 
 - `data/remote/`
-  - API son noktalarını tanımlayan Retrofit arayüzleri
-  - Örnekler: `/auth/login`, `/auth/register`, `/auth/refresh`
+  - Retrofit interfaces defining API endpoints
+  - Examples: `/auth/login`, `/auth/register`, `/auth/refresh`
 
 - `data/local/`
-  - `TokenStore.kt` ile erişim/refresh token ve kullanıcı rolü DataStore içinde saklanır
-  - Flow tabanlı erişim sağlanır ve bloklayıcı yardımcı fonksiyonlar da içerir
+  - `TokenStore.kt` stores access/refresh tokens and user role using DataStore
+  - Provides Flow-based access and blocking helper functions
 
 - `data/repository/`
   - `AuthRepositoryImpl.kt`
-    - API çağrılarını yapar
-    - başarılı yanıt geldiğinde tokenları kaydeder
-    - `Result` tipi ile hata yönetimi yapar
+    - Performs API calls
+    - Saves tokens when a successful response is received
+    - Handles errors with the `Result` type
   - `EventRepositoryImpl`, `TicketRepositoryImpl`, `PurchaseRepositoryImpl`, `CheckinRepositoryImpl`
-    - API yanıtlarını domain modellere dönüştürür
-    - `runCatchingApi` yardımcı fonksiyonu ile güvenli çağrı yapar
+    - Converts API responses into domain models
+    - Performs safe calls with the `runCatchingApi` helper function
 
 - `data/dto/`
-  - API request/response modelleri
-  - Domain modellerine dönüştürülecek veri yapılarını içerir
+  - API request/response models
+  - Contains data structures to be converted into domain models
 
 - `data/mapper/`
-  - DTO ve domain modeller arasında dönüşüm mantığı bulunur
+  - Contains conversion logic between DTO and domain models
 
 - `data/util/`
-  - API çağrılarını sararak hata yakalama ve `Result` dönüşü sağlama gibi yardımcı fonksiyonlar
+  - Helper functions for wrapping API calls, handling errors, and returning `Result`
 
-### 4.3 Önemli Teknolojiler
+### 4.3 Important Technologies
 
 - `Retrofit` + `Kotlinx Serialization`
 - `OkHttp Interceptor` + `Authenticator`
-- `DataStore` ile kalıcı token saklama
-- `Koin` ile repository ve servislerin bağlanması
+- Persistent token storage with `DataStore`
+- Binding repositories and services with `Koin`
 
 ---
 
-## 5. Önemli Dosyalar ve Görevleri
+## 5. Important Files and Responsibilities
 
 ### `app/TicketAppApplication.kt`
-Uygulama açıldığında Koin başlatılır.
+Koin is initialized when the application starts.
 - `androidContext(this)`
 - `androidLogger()`
 - `modules(dataModule, appModule)`
 
 ### `app/MainActivity.kt`
-Uygulamanın Compose başlangıç noktasıdır.
+The Compose entry point of the application.
 - `enableEdgeToEdge()`
 - `setContent { TicketAppTheme { KoinAndroidContext { AppNavHost() } } }`
 
 ### `app/navigation/AppNavHost.kt`
-Auth durumuna göre koşullu yönlendirme sağlar.
+Provides conditional navigation according to authentication state.
 - `SplashScreen`, `AuthedNavHost`, `UnAuthedNavHost`
-- Login sonrası `Home` ekranına geçiş
-- `popUpTo` ile geri yığın yönetimi
+- Navigation to `Home` after login
+- Back stack management with `popUpTo`
 
 ### `app/screen/LoginScreen.kt`
-Giriş ekranı UI bileşeni.
-- `OutlinedTextField` email ve şifre
-- `Button` ile giriş tetikleme
-- `SnackbarHost` ile hata gösterimi
+Login screen UI component.
+- `OutlinedTextField` for email and password
+- Login trigger with `Button`
+- Error display with `SnackbarHost`
 
 ### `app/viewmodel/LoginViewModel.kt`
-Form durumunu yönetir.
-- `canSubmit` validasyonu
-- `login(email, password)` çağrısı
-- hata mesajlarına `toUserMessage()` uygulaması
+Manages form state.
+- `canSubmit` validation
+- Calls `login(email, password)`
+- Applies `toUserMessage()` to error messages
 
 ### `core/domain/auth/AuthRepository.kt`
-Auth iş mantığının sözleşmesini tanımlar.
+Defines the contract for authentication business logic.
 
 
 ### `data/local/TokenStore.kt`
-Tokenları güvenli şekilde saklar.
+Stores tokens securely.
 
 
 ### `data/di/DataModule.kt`
-Ağ ve veri bağımlılıklarını bağlar.
-- `AuthInterceptor` ile tüm isteklere access token ekleme
-- `TokenAuthenticator` ile token refresh mekanizması
-- `Retrofit` ve servis üretimi
-- `AuthRepositoryImpl` vs.
+Connects network and data dependencies.
+- Adds access token to all requests with `AuthInterceptor`
+- Provides token refresh mechanism with `TokenAuthenticator`
+- Creates `Retrofit` and services
+- Provides `AuthRepositoryImpl` etc.
 
 ### `core/util/ErrorMessages.kt`
-Cihaz hatalarını kullanıcıya çevirir.
+Converts device errors into user messages.
 - `401`, `403`, `404`, `409`, `500+`
-- ağ bağlantı hatası için özel mesaj
+- Special message for network connection errors
 
 ---
-
-
